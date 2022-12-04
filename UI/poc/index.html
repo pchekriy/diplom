@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+* {
+  box-sizing: border-box;
+}
+
+.row {
+  min-height: 80vh;
+}
+
+.row::after {
+  content: "";
+  clear: both;
+  display: table;
+}
+
+[class*="col-"] {
+  float: left;
+  padding: 1em;
+}
+
+html {
+  font-family: "Lucida Sans", sans-serif;
+}
+
+body {
+  background-color: #000000;
+  background-image: linear-gradient(147deg, #000000 0%, #434343 74%);
+  color:  white;
+  margin: 0;
+}
+
+.header {
+  color: #ffffff;
+  padding: 1em;
+  margin: 0;
+  border-bottom: 1px solid grey;
+  min-height: 10vh;
+}
+
+.menu ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.menu li {
+  padding: 0.5em;
+  margin-bottom: 1.5em;
+  background-color: transparent;
+  color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+  border-radius: 5px;
+  min-height: 3em;
+  line-height: 3em;
+  font-size: 1em;
+  border-bottom: 1px solid white;
+}
+
+.menu li:hover {
+  background-color: lightseagreen;
+}
+
+.aside {
+  background-color: #33b5e5;
+  padding: 1em;
+  color: #ffffff;
+  text-align: center;
+  font-size: 1em;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+  border-radius: 5px;
+  height: 20.5em;
+}
+
+.footer {
+  color: #ffffff;
+  text-align: center;
+  font-size: 0.8em;
+  padding: 1em;
+  border-bottom: 1px solid grey;
+  border-top: 1px solid grey;
+  min-height: 10vh;
+}
+
+/* For mobile phones: */
+[class*="col-"] {
+  width: 100%;
+}
+
+@media only screen and (min-width: 600px) {
+  /* For tablets: */
+  .col-s-1 {width: 8.33%;}
+  .col-s-2 {width: 16.66%;}
+  .col-s-3 {width: 25%;}
+  .col-s-4 {width: 33.33%;}
+  .col-s-5 {width: 41.66%;}
+  .col-s-6 {width: 50%;}
+  .col-s-7 {width: 58.33%;}
+  .col-s-8 {width: 66.66%;}
+  .col-s-9 {width: 75%;}
+  .col-s-10 {width: 83.33%;}
+  .col-s-11 {width: 91.66%;}
+  .col-s-12 {width: 100%;}
+}
+@media only screen and (min-width: 768px) {
+  /* For desktop: */
+  .col-1 {width: 8.33%;}
+  .col-2 {width: 16.66%;}
+  .col-3 {width: 25%;}
+  .col-4 {width: 33.33%;}
+  .col-5 {width: 41.66%;}
+  .col-6 {width: 50%;}
+  .col-7 {width: 58.33%;}
+  .col-8 {width: 66.66%;}
+  .col-9 {width: 75%;}
+  .col-10 {width: 83.33%;}
+  .col-11 {width: 91.66%;}
+  .col-12 {width: 100%;}
+}
+
+
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>NFTPass Demo - by Pavel Chekriy, HSE</h1>
+</div>
+
+<div class="row">
+  <div class="col-3 col-s-3 menu">
+    <ul>
+      <!-- pass chain id -->
+      <li id="btn_show_details" onclick="showAccount()">My Account</li>
+      <li id="btn_show_locked_info" onclick="showLockedInfo()">Show Locked Info</li>
+    </ul>
+  </div>
+
+  
+
+  
+
+  
+
+  <div id="details" class="col-9 col-s-9" style="display:none">
+    <h1>NFTPass Demo - by Pavel Chekriy, HSE</h1>
+    
+    <p style="color:grey;">current wallet address: <span id="cur_wallet_address"></span></script></p>
+    <div id="details_info"></div>
+  </div>
+
+  <div id="locked_info" class="col-9 col-s-9" style="display:none">
+    <h1>Show locked info</h1>
+    <p><button type="button" onclick="showLockedInfoInteraction()" style="background-color: lightseagreen; color:  white;height: 2em; width: 14em;">Show Locked Info</button></p>
+    
+
+    <div id="locked_info_panel"></div>
+  </div>
+
+  
+
+
+
+</div>
+<div class="footer">
+  <p id='msg' style='color: white'>Optimized for desktop browser. Connect your Metamask to Ganache (forked mainnet)./p>
+</div>
+
+<script src="https://cdn.ethers.io/lib/ethers-5.4.umd.min.js"
+        type="application/javascript"></script>
+<script type="text/javascript">
+  const AUTH_API_URL = 'https://nft-auth-api.id-chain.net'
+  let provider;
+  let signer;
+  let account;
+  let nft_contract;
+
+
+
+  const nft_contract_address = '0x47446783032C47Be68036ED3A4AcbB271c428Daf';  
+  const nft_contract_abi = [{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"_owner","type":"address"},{"indexed":true,"internalType":"address","name":"_approved","type":"address"},{"indexed":true,"internalType":"uint256","name":"_tokenId","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"_owner","type":"address"},{"indexed":true,"internalType":"address","name":"_operator","type":"address"},{"indexed":false,"internalType":"bool","name":"_approved","type":"bool"}],"name":"ApprovalForAll","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"_from","type":"address"},{"indexed":true,"internalType":"address","name":"_to","type":"address"},{"indexed":true,"internalType":"uint256","name":"_tokenId","type":"uint256"}],"name":"Transfer","type":"event"},{"inputs":[],"name":"ACTIVE","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"CANNOT_TRANSFER_TO_ZERO_ADDRESS","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"DEVELOPED_BY_PAVEL_CHEKRIY","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"DISCLAIMER_MY_CODE_COULD_BE_USED_FOR_MALICIOUS_OBJECTIVES_WITHOUT_MY_CONSENT_ALWAYS_DYOR","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"NOT_ACTIVE","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"NOT_CURRENT_OWNER","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"activate","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"mgr","type":"address"}],"name":"addManager","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"administeredBy","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_approved","type":"address"},{"internalType":"uint256","name":"_tokenId","type":"uint256"}],"name":"approve","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_owner","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_tokenId","type":"uint256"}],"name":"burn","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"burnByAddress","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"cleanup","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"contractURI","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"deactivate","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_tokenId","type":"uint256"}],"name":"exist","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"fee","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_tokenId","type":"uint256"}],"name":"getApproved","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"wallet","type":"address"}],"name":"hasPass","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_owner","type":"address"},{"internalType":"address","name":"_operator","type":"address"}],"name":"isApprovedForAll","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"isManager","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address[]","name":"to","type":"address[]"}],"name":"massMintManager","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"address","name":"to","type":"address"}],"name":"mintManager","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"_name","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_tokenId","type":"uint256"}],"name":"ownerOf","outputs":[{"internalType":"address","name":"_owner","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"ownerWithdrawEther","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"tokenAddress","type":"address"},{"internalType":"uint256","name":"realAmountTokens","type":"uint256"}],"name":"ownerWithdrawTokens","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"mgr","type":"address"}],"name":"removeManager","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_from","type":"address"},{"internalType":"address","name":"_to","type":"address"},{"internalType":"uint256","name":"_tokenId","type":"uint256"}],"name":"safeTransferFrom","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_from","type":"address"},{"internalType":"address","name":"_to","type":"address"},{"internalType":"uint256","name":"_tokenId","type":"uint256"},{"internalType":"bytes","name":"_data","type":"bytes"}],"name":"safeTransferFrom","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_operator","type":"address"},{"internalType":"bool","name":"_approved","type":"bool"}],"name":"setApprovalForAll","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"newContractUri","type":"string"}],"name":"setContractURI","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"newFee","type":"uint256"}],"name":"setFee","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"newName","type":"string"}],"name":"setNFTName","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"newSymbol","type":"string"}],"name":"setNFTSymbol","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes4","name":"_interfaceID","type":"bytes4"}],"name":"supportsInterface","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"_symbol","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_index","type":"uint256"}],"name":"tokenByIndex","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_owner","type":"address"},{"internalType":"uint256","name":"_index","type":"uint256"}],"name":"tokenOfOwnerByIndex","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"tokenURI","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_from","type":"address"},{"internalType":"address","name":"_to","type":"address"},{"internalType":"uint256","name":"_tokenId","type":"uint256"}],"name":"transferFrom","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"}];
+
+  
+   
+  
+  
+  (async () => {
+    //code which will run on page load
+    await connectToChain(5); //goerli
+  })();
+
+  function setMsg(id, value, disp = 'block', color='white') {
+    var el = document.getElementById(id);
+    if (el) {
+      el.innerHTML = value;
+      el.style.color = color;
+      if (value == '') el.style.display = 'none';
+      else el.style.display = disp;
+    }
+  }
+
+ 
+
+  async function connectToChain(chId){
+
+      let hexChainIDs = {};
+      hexChainIDs[1] = "0x1";
+      hexChainIDs[3] = "0x3"; 
+      hexChainIDs[5] = "0x5";
+      hexChainIDs[56] = "0x38"; //BSC
+      hexChainIDs[1337] = "0x539";
+      hexChainIDs[5777] = "0x1691";
+
+      provider = new ethers.providers.Web3Provider(window.ethereum);
+      
+      const { chainId } = await provider.getNetwork();
+
+      try {
+        if ( !(chainId == 1 || chainId == 3 || chainId == 5 || chainId == 1337 || chainId == 5777) )  throw 'wrong chainId';
+
+      } catch(e) {
+        setMsg('msg','unsupported chain','block','red');
+      }
+
+      try {
+        if (chId != chainId){
+
+            console.log('chId=', chId, 'chainId=', chainId, 'hexChainIDs[chId]=',hexChainIDs[chId])
+            try {
+  
+              await window.ethereum.request({
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: hexChainIDs[chId]}]
+              });
+              chainId = chId;
+              setMsg('msg','switched MetaMask to requested chain');
+              
+            } catch (switchError) {
+              
+              // The network has not been added to MetaMask
+              if (switchError.code === 4902) {
+               setMsg('msg','cannot switch chain, it is not present in MetaMask, please add it','block','red');
+              }
+              
+              
+            }
+        }
+      } catch (e) {
+        setMsg('msg','chain do not correspond, switch your Metamask to right chain','block','red');
+      }
+
+      
+
+      try {
+
+        if ( chId == 1){
+             setMsg('msg','Connected to Ethereum mainnet.');
+        } else if (chainId == 56){
+            setMsg('msg','Connected to Binance Smart Chain.');
+        } else if (chainId == 3){
+            setMsg('msg','Connected to Ropsten testnet.');
+        } else if (chainId == 5){
+            setMsg('msg','Connected to Goerli testnet.');
+        }  else if (chainId == 1337){
+            setMsg('msg','Connected to Ganache local testnet.');
+        }  else if (chainId == 5777){
+            setMsg('msg','Connected to Homology dev testnet.');
+        }
+
+        await provider.send("eth_requestAccounts", []);
+        signer = provider.getSigner();
+        const accounts = await provider.listAccounts();
+        account = accounts[0];
+
+        nft_contract = new ethers.Contract( nft_contract_address, nft_contract_abi, signer);   
+
+        if (!(await nft_contract.name({from:account}) == 'NFTPass'))
+          setMsg('msg','no connection with contract','block','red');
+        
+        showAccount();
+
+        
+    } catch (e) {
+      setMsg('msg','something went wrong','block','red');   
+    }
+  }  
+
+  
+
+ 
+
+  async function showAccount(){
+      document.getElementById('details').style.display = 'block';  
+      document.getElementById('locked_info').style.display = 'none';
+       document.getElementById('locked_info_panel').innerHTML = '';
+      
+    
+      document.getElementById('cur_wallet_address').innerHTML = account;
+      document.getElementById('details_info').innerHTML = '<p>balance: '+ ethers.utils.formatEther(await provider.getBalance(account))+'</p>';
+      document.getElementById('details_info').innerHTML += '<p>NFTPass: '+ ((await nft_contract.hasPass(account)) ? '<span style="color:green">current wallet have NFTPass</span>':'<span style="color: red">No NFTPass in this wallet</span>')+'</p>';
+     
+
+      if (await nft_contract.isManager(account)){
+        document.getElementById('details_info').innerHTML += '<hr><p>You are manager and can generate NFT passes</p>';
+        document.getElementById('details_info').innerHTML += '<p>user wallet: <input type="text" id="user_wallet" name="user_wallet" style="height: 2em;width: 14em;"><button type="button" onclick="checkPassContractInteraction()" style="background-color: lightseagreen; color:  white;height: 2em; width: 7em;">NFTPass?</button><button type="button" onclick="genPassContractInteraction()" style="background-color: lightseagreen; color:  white;height: 2em; width: 8em;">Gen NFTPass</button><button type="button" onclick="burnPassContractInteraction()" style="background-color: lightseagreen; color:  white;height: 2em; width: 8em;">Burn NFTPass</button></p>';
+    
+         
+      } 
+      
+      if ((await nft_contract.owner()) == account){
+        document.getElementById('details_info').innerHTML += '<hr><p>You are owner</p>';
+        document.getElementById('details_info').innerHTML += '<p>user wallet: <input type="text" id="user_wallet_o" name="user_wallet_o" style="height: 2em;width: 14em;"><button type="button" onclick="addManagerInteraction()" style="background-color: lightseagreen; color:  white;height: 2em; width: 7em;">[+] Manager</button><button type="button" onclick="removeManagerInteraction()" style="background-color: lightseagreen; color:  white;height: 2em; width: 8em;">[-] Manager</button></p>';
+         
+      } 
+
+  }
+
+
+  async function showLockedInfo(){
+      document.getElementById('details').style.display = 'none';
+      document.getElementById('locked_info').style.display = 'block'; 
+     
+  }
+
+ 
+    
+  
+  function safeSetInnerHTMLById(id, value, disp = 'block'){
+    var el = document.getElementById(id);
+    if (el){
+       el.innerHTML = value;
+       if (value == '' ) el.style.display = "none"
+       else el.style.display = disp;
+    }
+  }
+
+
+  async function showLockedInfoInteraction() {
+    try {
+       
+
+      const ethAddress = await signer.getAddress();
+      const hash = await ethers.utils.keccak256(ethAddress);
+      const signedMessage = await signer.signMessage(ethers.utils.arrayify(hash));
+      //post to backend and get locked info back..
+      checkAuth(signedMessage);
+       
+    } catch (e){
+        setMsg('msg','something went wrong, check metamask connection','block','red');
+        console.log(e.message);
+
+    }
+  }
+
+async function addManagerInteraction() {
+    try {
+       
+      let user_wallet = document.getElementById('user_wallet_o').value;
+      let tx = await nft_contract.addManager(user_wallet);
+
+      await tx.wait(1);
+     
+      setMsg('msg','last transaction hash: '+tx.hash);
+
+
+       
+    } catch (e){
+        setMsg('msg','something went wrong, check metamask connection','block','red');
+        console.log(e.message);
+
+    }
+  }
+
+async function removeManagerInteraction() {
+    try {
+       
+      let user_wallet = document.getElementById('user_wallet_o').value;
+      let tx = await nft_contract.removeManager(user_wallet);
+
+      await tx.wait(1);
+     
+      setMsg('msg','last transaction hash: '+tx.hash);
+
+
+       
+    } catch (e){
+        setMsg('msg','something went wrong, check metamask connection','block','red');
+        console.log(e.message);
+
+    }
+  }
+
+async function checkPassContractInteraction() {
+    try {
+       
+      let user_wallet = document.getElementById('user_wallet').value;
+      if( await nft_contract.hasPass(user_wallet) ){
+        setMsg('msg','<span style="color:green">this wallet has NFTPass<span>');
+      } else {
+          setMsg('msg','<span style="color:red">this wallet had no NFTPass<span>');
+
+      }
+
+       
+    } catch (e){
+        setMsg('msg','something went wrong, check metamask connection','block','red');
+        console.log(e.message);
+
+    }
+  }
+
+
+ async function genPassContractInteraction() {
+    try {
+       
+      let user_wallet = document.getElementById('user_wallet').value;
+      let tx = await nft_contract.mintManager(user_wallet,{value: ethers.utils.parseEther("0.001").toString()});
+
+      await tx.wait(1);
+     
+      setMsg('msg','last transaction hash: '+tx.hash);
+
+
+       
+    } catch (e){
+        setMsg('msg','something went wrong, check metamask connection','block','red');
+        console.log(e.message);
+
+    }
+  }
+
+  async function burnPassContractInteraction() {
+    try {
+       
+      let user_wallet = document.getElementById('user_wallet').value;
+
+
+      let tId = 0;
+      try{
+        tId =  await nft_contract.tokenOfOwnerByIndex(user_wallet, 0);
+      } catch(e){
+        //do nothing
+      }
+
+      if (tId == 0){
+         setMsg('msg','<span style="color:red">this wallet had no NFTPass<span>');
+         return;
+      }
+
+      if ((await nft_contract.administeredBy(tId)) != account){
+        setMsg('msg','<span style="color:red">you are not manager of this user NFTPass<span>');
+        return; 
+      }
+
+      let tx = await nft_contract.burnByAddress(user_wallet);
+
+      await tx.wait(1);
+     
+      setMsg('msg','last transaction hash: '+tx.hash);
+
+
+       
+    } catch (e){
+        setMsg('msg','something went wrong, check metamask connection','block','red');
+        console.log(e.message);
+
+    }
+  }
+
+
+async function checkAuth(signedMessage) {
+
+  let myHeaders = new Headers();
+  myHeaders.append("Content-Type", "application/json");
+  let addr = await signer.getAddress();
+
+  let raw = JSON.stringify({ "signedMessage": signedMessage, "address": addr });
+
+
+  let requestOptions = {
+    method: 'POST',
+    headers: myHeaders,
+    body: raw,
+    redirect: 'follow'
+  };
+
+  fetch(AUTH_API_URL + '/verify', requestOptions)
+    .then(response => {
+      if (response.status !== 200) {
+        throw new Error(response.status);
+      } else {
+        return response.clone().json();
+      }
+
+    })
+    .then(respJson => {
+
+      document.getElementById('locked_info_panel').innerHTML = respJson.content;
+
+    })
+    .catch(error => {
+      //console.log("admin authentification failure:"+error);
+       setMsg('msg','something went wrong or you do not have NFTPass','block','red');
+    });
+}
+
+  
+
+</script>
+</body>
+</html>
+
