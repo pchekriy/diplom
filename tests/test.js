@@ -15,16 +15,23 @@ const fs = require('fs');
 
 
 
-const contractsPath = '/Users/serg/eth/pasha_dipl4/smartcontracts/';
-
+const contractsPath = '/Users/serg/diplom/smartcontracts/'; 
 
 let all_source = fs.readFileSync("../smartcontracts/compiled/contracts.json");
 let nft_contract_obj = JSON.parse(all_source)["contracts"][contractsPath+'nft/nft.sol:NFTPass'];
 let nft_contract;
+let nft_contract_oz_obj = JSON.parse(all_source)["contracts"][contractsPath+'nft/oz_test.sol:TestNFT'];
+let nft_contract_oz;
+
+let nft_contract_opt_empty_obj = JSON.parse(all_source)["contracts"][contractsPath+'nft/nft_opt_test.sol:NFTTestOpt'];
+let nft_contract_opt;
+
+
+
 
 let sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-
+let balBefore, balAfter; 
 
 
 function requireCondition(condition, err_msg, success_msg) {
@@ -36,6 +43,11 @@ function requireCondition(condition, err_msg, success_msg) {
 	}
 }
 
+
+function gasDiff(before, after){
+	let diff = before.sub(after);
+	console.log(diff.toString());
+}
 
 
 testall();
@@ -97,9 +109,9 @@ async function testall(){
    	console.log('user3:', ethers.utils.formatEther( await provider.getBalance(user3_wallet_addr)) );
    
 
-		
-	
-	console.log('/* 1.deploy nft contract */');
+	balBefore = await provider.getBalance(admin_wallet_addr);
+
+	console.log('/* 1.deploy opt nft contract */');
 
 	try {
 		
@@ -115,7 +127,7 @@ async function testall(){
 	  
 	}  catch (e) {
 		
-		console.log('== 1.deploy nft contract - failed ==');
+		console.log('== 1.deploy opt nft contract - failed ==');
 		console.log(e.message);
 		process.exit(0);
 	}
@@ -124,6 +136,77 @@ async function testall(){
 
 
 	console.log('== 1.deploy nft contract - passed ==');
+	console.log('gas spend on deploy of opt contract');
+	balAfter = await provider.getBalance(admin_wallet_addr);
+
+	gasDiff(balBefore,balAfter);
+
+	balBefore = await provider.getBalance(admin_wallet_addr);
+
+	console.log('/* 1.deploy OZ standart nft contract */');
+
+	try {
+		
+	    let contract_factory = new ethers.ContractFactory(nft_contract_oz_obj.abi, nft_contract_oz_obj.bin, admin_wallet);
+	  
+	    nft_contract_oz = await contract_factory.deploy();
+	  	
+	  	
+	    await nft_contract_oz.deployTransaction.wait(5); //after that it is deployed;
+	
+	    console.log ('nft contract oz address =',nft_contract_oz.address);
+	    
+	  
+	}  catch (e) {
+		
+		console.log('== 1.deploy OZ standart nft contract - failed ==');
+		console.log(e.message);
+		process.exit(0);
+	}
+
+	 
+
+
+	console.log('== 1.deploy OZ standart nft contract - passed ==');
+	console.log('gas spend on deploy of OZ standart contract');
+	balAfter = await provider.getBalance(admin_wallet_addr);
+
+	gasDiff(balBefore,balAfter);
+
+
+	balBefore = await provider.getBalance(admin_wallet_addr);
+
+	console.log('/* 1.deploy OPT standart  nft contract */');
+
+	try {
+		
+	    let contract_factory = new ethers.ContractFactory(nft_contract_opt_empty_obj.abi, nft_contract_opt_empty_obj.bin, admin_wallet);
+	  
+	    nft_contract_opt = await contract_factory.deploy();
+	  	
+	  	
+	    await nft_contract_opt.deployTransaction.wait(5); //after that it is deployed;
+	
+	    console.log ('nft contract opt (empty) address =',nft_contract_opt.address);
+	    
+	  
+	}  catch (e) {
+		
+		console.log('== 1.deploy OPT standart nft contract - failed ==');
+		console.log(e.message);
+		process.exit(0);
+	}
+
+	 
+
+
+	console.log('== 1.deploy OPT standart nft contract - passed ==');
+	console.log('gas spend on deploy of OPT standart contract');
+	balAfter = await provider.getBalance(admin_wallet_addr);
+
+	gasDiff(balBefore,balAfter);
+
+
   	
 	console.log('/* 2.configure contract */');
 
@@ -170,7 +253,7 @@ async function testall(){
 
 	try {
 
-	
+		balBefore = await provider.getBalance(admin_wallet_addr);
 		try{
 			let tx = await nft_contract.connect(admin_wallet).mintManager(accounts[9], {value: ethers.utils.parseEther("0.01").toString()}); 
 			await tx.wait(5);
@@ -181,9 +264,43 @@ async function testall(){
 			process.exit(0);
 		}
 		
+		balAfter = (await provider.getBalance(admin_wallet_addr)).add(ethers.utils.parseEther("0.01"));;
+		console.log('gas spend on mint in opt');
+		gasDiff(balBefore,balAfter);
+
+		balBefore = await provider.getBalance(admin_wallet_addr);
+		try{
+			let tx = await nft_contract_oz.connect(admin_wallet).mintToken(accounts[9]); 
+			await tx.wait(5);
+			
+		
+		} catch(e) {
+			console.log(e.message);
+			process.exit(0);
+		}
+		
+		balAfter = await provider.getBalance(admin_wallet_addr);
+		console.log('gas spend on mint in OZ standart WITHOUT ALL bus. logic implemented');
+		gasDiff(balBefore,balAfter);
+
+
+		balBefore = await provider.getBalance(admin_wallet_addr);
+		try{
+			let tx = await nft_contract_opt.connect(admin_wallet).mintToken(accounts[9]); 
+			await tx.wait(5);
+			
+		
+		} catch(e) {
+			console.log(e.message);
+			process.exit(0);
+		}
+		
+		balAfter = await provider.getBalance(admin_wallet_addr);
+		console.log('gas spend on mint in OPT standart WITHOUT ALL bus. logic implemented');
+		gasDiff(balBefore,balAfter);
 
 		requireCondition(await nft_contract.hasPass(accounts[9]),"hasPass error","hasPass passed");
-	
+
 	
 		try{
 			let tx = await nft_contract.connect(admin_wallet).mintManager(accounts[9], {value: ethers.utils.parseEther("0.01").toString()}); 

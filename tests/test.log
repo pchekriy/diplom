@@ -1,0 +1,65 @@
+ node test.js http://127.0.0.1:8545 0x6dE47FC3cA6DBE83a0cbc3b0F4AF79809eD43749 0670559f1384d63515ca4a433e17e9b00e91de7615da040719de39a7139a11ba
+\myArgs= [
+  'http://127.0.0.1:8545',
+  '0x6dE47FC3cA6DBE83a0cbc3b0F4AF79809eD43749',
+  '0670559f1384d63515ca4a433e17e9b00e91de7615da040719de39a7139a11ba'
+]
+JsonRpcProviderUrl= http://127.0.0.1:8545
+test accounts
+[
+  '0x6dE47FC3cA6DBE83a0cbc3b0F4AF79809eD43749',
+  '0x52328CB786255ba4Af980aDc7d04b8Fa66d00F26',
+  '0x1Ec6F54e7Bcebd2Eb4a8b875D28B6b984E57fA0f',
+  '0x3cCbe31D03a30373E12244D0a2a2D569262dC04f',
+  '0x0cFe88A5542802572bF6582EB5f4a02112bbA0C3',
+  '0xe8e599C310a0B7270D7818f1392485F7a2165521',
+  '0x11b8a32c3b5aA11B8224693c14E9f8A3921ec0AE',
+  '0xf20c4e6baf4807FFC38E876856416c9436a67891',
+  '0xED9AC6ad85340554afaE19DF45177DB979dc8122',
+  '0x509FA18F0bf5a0c4F234D4E0534fA3cF6e50c255'
+]
+1st account is contract deployer
+2-10 accounts are test users
+admin balance: 99.98999994799148
+balances
+user1: 99.96999999775671
+user2: 100.0
+user3: 100.0
+/* 1.deploy opt nft contract */
+nft contract address = 0x0c7a0c9CD1B14Ac29503Dd5d991f3318CC7625B8
+== 1.deploy nft contract - passed ==
+gas spend on deploy of opt contract
+12608220000
+/* 1.deploy OZ standart nft contract */
+nft contract oz address = 0xf3599C103c2Eab514c0a8504bf3F64B04040144B
+== 1.deploy OZ standart nft contract - passed ==
+gas spend on deploy of OZ standart contract
+7189680000
+/* 1.deploy OPT standart  nft contract */
+nft contract opt (empty) address = 0x1540B62353483e6408901D9A7eC2aFe5d85D3ce6
+== 1.deploy OPT standart nft contract - passed ==
+gas spend on deploy of OPT standart contract
+6156795000
+/* 2.configure contract */
+setFee passed
+addManager passed
+== 2.configure contract - passed ==
+/* 3.mint & burn nftpasses */
+gas spend on mint in opt
+772825000
+gas spend on mint in OZ standart WITHOUT ALL bus. logic implemented
+666495000
+gas spend on mint in OPT standart WITHOUT ALL bus. logic implemented
+650370000
+hasPass passed
+right behaviour - cant mint 2 passes to the same user
+exist passed
+exist passed2
+manager mint passed
+exist passed3
+mass manager mint passed
+== 3.mint & burn nftpasses - passed ==
+/* 4.checking nftpasses */
+checking nftpasses - passed
+/* 5.test owner withdraw ether */
+=== all tests passed ===

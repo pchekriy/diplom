@@ -7,6 +7,8 @@ pragma solidity 0.8.17;
 import '../utils/pc.sol';
 import '../utils/ownable.sol';
 
+
+
 /**
  * @dev ERC-721 non-fungible token standard.
  * See https://github.com/ethereum/EIPs/blob/master/EIPS/eip-721.md.
@@ -372,11 +374,16 @@ contract NFToken is
   modifier canOperate(
     uint256 _tokenId
   ){
-    address tokenOwner = idToOwner[_tokenId];
-    require(tokenOwner == msg.sender || ownerToOperators[tokenOwner][msg.sender], NOT_OWNER_OR_OPERATOR);
+    _canOperate(_tokenId);
     _;
   }
 
+
+  function _canOperate( uint256 _tokenId) internal view {
+    address tokenOwner = idToOwner[_tokenId];
+    require(tokenOwner == msg.sender || ownerToOperators[tokenOwner][msg.sender], NOT_OWNER_OR_OPERATOR);
+  }
+  
   /**
    * @dev Guarantees that the msg.sender is allowed to transfer NFT.
    * @param _tokenId ID of the NFT to transfer.
@@ -384,6 +391,11 @@ contract NFToken is
   modifier canTransfer(
     uint256 _tokenId
   ){
+    _canTransfer(_tokenId);
+    _;
+  }
+
+  function _canTransfer( uint256 _tokenId) internal view {
     address tokenOwner = idToOwner[_tokenId];
     require(
       tokenOwner == msg.sender
@@ -391,7 +403,6 @@ contract NFToken is
       || ownerToOperators[tokenOwner][msg.sender],
       NOT_OWNER_APPROWED_OR_OPERATOR
     );
-    _;
   }
 
   /**
@@ -401,8 +412,12 @@ contract NFToken is
   modifier validNFToken(
     uint256 _tokenId
   ){
-    require(idToOwner[_tokenId] != address(0), NOT_VALID_NFT);
+    _validNFToken(_tokenId);
     _;
+  }
+
+  function _validNFToken(uint256 _tokenId) internal view {
+      require(idToOwner[_tokenId] != address(0), NOT_VALID_NFT);
   }
 
   /**
@@ -615,7 +630,7 @@ contract NFToken is
         _removeNFToken(from, _tokenId);
         _addNFToken(_to, _tokenId);
 
-        emit Transfer(from, _to, _tokenId);
+        //emit Transfer(from, _to, _tokenId);
     }
 
   /**
@@ -633,11 +648,11 @@ contract NFToken is
     internal
     virtual {
         require(_to != address(0), ZERO_ADDRESS);
-        require(idToOwner[_tokenId] == address(0), NFT_ALREADY_EXISTS);
+        //require(idToOwner[_tokenId] == address(0), NFT_ALREADY_EXISTS);
 
         _addNFToken(_to, _tokenId);
 
-        emit Transfer(address(0), _to, _tokenId);
+        //emit Transfer(address(0), _to, _tokenId);
     }
 
   /**
@@ -983,8 +998,9 @@ contract NFTokenEnumerable is
   /**
    * @dev Array of all NFT IDs.
    */
-  mapping (uint256 => uint256) internal tokens;
-  uint256 tokensLength;
+  //mapping (uint256 => uint256) internal tokens;
+  uint256[] internal tokens;
+ // uint256 tokensLength;
 
   /**
    * @dev Mapping from token ID to its index in global tokens array.
@@ -995,8 +1011,7 @@ contract NFTokenEnumerable is
    * @dev Mapping from owner to list of owned NFT IDs.
    */
   struct OwnedTokens{
-    mapping (uint256 => uint256) tokensArr;
-    uint256 tokensArrLength;
+    uint256[] tokensArr;
   }
 
   mapping(address => OwnedTokens) internal ownerToIds;
@@ -1024,7 +1039,7 @@ contract NFTokenEnumerable is
     override
     view
     returns (uint256){
-        return tokensLength;
+        return tokens.length;
     }
 
   /**
@@ -1039,7 +1054,7 @@ contract NFTokenEnumerable is
     override
     view
     returns (uint256){
-        require(_index < tokensLength, INVALID_INDEX);
+        require(_index < tokens.length, INVALID_INDEX);
         return tokens[_index];
     }
 
@@ -1057,7 +1072,7 @@ contract NFTokenEnumerable is
     override
     view
     returns (uint256){
-        require(_index < ownerToIds[_owner].tokensArrLength, INVALID_INDEX);
+        require(_index < ownerToIds[_owner].tokensArr.length, INVALID_INDEX);
         return ownerToIds[_owner].tokensArr[_index];
     }
 
@@ -1076,9 +1091,8 @@ contract NFTokenEnumerable is
     internal
     override {
         super._mint(_to, _tokenId);
-        tokens[tokensLength] = _tokenId; 
-        tokensLength++;
-        idToIndex[_tokenId] = tokensLength - 1;
+        tokens.push(_tokenId); 
+        idToIndex[_tokenId] = tokens.length - 1;
     }
 
   /**
@@ -1097,12 +1111,12 @@ contract NFTokenEnumerable is
         super._burn(_tokenId);
 
         uint256 tokenIndex = idToIndex[_tokenId];
-        uint256 lastTokenIndex = tokensLength - 1;
+        uint256 lastTokenIndex = tokens.length - 1;
         uint256 lastToken = tokens[lastTokenIndex];
 
         tokens[tokenIndex] = lastToken;
 
-        tokensLength--;
+        tokens.pop();
         // This wastes gas if you are burning the last token but saves a little gas if you are not.
         idToIndex[lastToken] = tokenIndex;
         idToIndex[_tokenId] = 0;
@@ -1124,7 +1138,7 @@ contract NFTokenEnumerable is
         delete idToOwner[_tokenId];
 
         uint256 tokenToRemoveIndex = idToOwnerIndex[_tokenId];
-        uint256 lastTokenIndex = ownerToIds[_from].tokensArrLength - 1;
+        uint256 lastTokenIndex = ownerToIds[_from].tokensArr.length - 1;
 
         if (lastTokenIndex != tokenToRemoveIndex){
             uint256 lastToken = ownerToIds[_from].tokensArr[lastTokenIndex];
@@ -1132,7 +1146,7 @@ contract NFTokenEnumerable is
             idToOwnerIndex[lastToken] = tokenToRemoveIndex;
         }
 
-        ownerToIds[_from].tokensArrLength--;
+        ownerToIds[_from].tokensArr.pop();
     }
 
   /**
@@ -1150,9 +1164,8 @@ contract NFTokenEnumerable is
         require(idToOwner[_tokenId] == address(0), NFT_ALREADY_EXISTS);
         idToOwner[_tokenId] = _to;
 
-        ownerToIds[_to].tokensArr[ownerToIds[_to].tokensArrLength] = _tokenId;
-        ownerToIds[_to].tokensArrLength++;
-        idToOwnerIndex[_tokenId] = ownerToIds[_to].tokensArrLength - 1;
+        ownerToIds[_to].tokensArr.push( _tokenId);
+        idToOwnerIndex[_tokenId] = ownerToIds[_to].tokensArr.length - 1;
     }
 
   /**
@@ -1168,9 +1181,11 @@ contract NFTokenEnumerable is
     override
     view
     returns (uint256){
-        return ownerToIds[_owner].tokensArrLength;
+        return ownerToIds[_owner].tokensArr.length;
     }
 }
+
+
 
 
 
@@ -1253,8 +1268,8 @@ contract NFTPass is NFTokenEnumerable,  Ownable, PC {
 	function mintManager(address to) external payable onlyManager {
 		require(msg.value == fee, "payment do not match with fee");
 	 	require(_getOwnerNFTCount(to) == 0, "one pass per wallet is enough");
-	 	uint256 tId = tokensLength+1;
-	    _safeMint(to, tokensLength+1);
+	 	uint256 tId = tokens.length+1;
+	    _safeMint(to, tokens.length+1);
 	    administeredBy[tId] = msg.sender; //current admin of this user
 	}
 
@@ -1263,7 +1278,7 @@ contract NFTPass is NFTokenEnumerable,  Ownable, PC {
 		require(msg.value == fee * to.length, "payment do not match with fee");
 		for (uint256 i=0; i < to.length; i++){
 	 		require(_getOwnerNFTCount(to[i]) == 0, "one pass per wallet is enough");
-	    	_safeMint(to[i], tokensLength+1);
+	    	_safeMint(to[i], tokens.length+1);
 	    }
 	}
 

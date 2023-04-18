@@ -10,9 +10,9 @@
   "author": "Chekriy",
   "license": "ISC",
   "dependencies": {
+    "@openzeppelin/contracts": "^4.8.3",
     "eth-sig-util": "^3.0.1",
     "ethers": "^5.0.32",
     "md5": "^2.3.0"
   }
 }
-
