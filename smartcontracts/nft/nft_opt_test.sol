@@ -441,7 +441,7 @@ contract NFToken is
     uint256 _tokenId,
     bytes calldata _data
   )
-    public
+    external
     virtual
     override {
         _safeTransferFrom(_from, _to, _tokenId, _data);
@@ -461,7 +461,7 @@ contract NFToken is
     address _to,
     uint256 _tokenId
   )
-    public
+    external
     virtual
     override {
         _safeTransferFrom(_from, _to, _tokenId, "");
@@ -482,7 +482,7 @@ contract NFToken is
     address _to,
     uint256 _tokenId
   )
-    public
+    external
     override
     virtual
     canTransfer(_tokenId)
@@ -624,7 +624,7 @@ contract NFToken is
         _removeNFToken(from, _tokenId);
         _addNFToken(_to, _tokenId);
 
-        //emit Transfer(from, _to, _tokenId);
+        emit Transfer(from, _to, _tokenId);
     }
 
   /**
@@ -646,7 +646,7 @@ contract NFToken is
 
         _addNFToken(_to, _tokenId);
 
-        //emit Transfer(address(0), _to, _tokenId);
+        emit Transfer(address(0), _to, _tokenId);
     }
 
   /**
@@ -875,7 +875,7 @@ contract NFTokenMetadata is
   function tokenURI(
     uint256 _tokenId
   )
-    public
+    external
     override
     virtual
     view
@@ -916,7 +916,7 @@ contract NFTokenMetadata is
    */
   function _setTokenUri(
     uint256 _tokenId,
-    string memory _uri
+    string calldata _uri
   )
     internal
     validNFToken(_tokenId){

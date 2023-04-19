@@ -1,5 +1,5 @@
- node test.js http://127.0.0.1:8545 0x6dE47FC3cA6DBE83a0cbc3b0F4AF79809eD43749 0670559f1384d63515ca4a433e17e9b00e91de7615da040719de39a7139a11ba
-\myArgs= [
+node test.js http://127.0.0.1:8545 0x6dE47FC3cA6DBE83a0cbc3b0F4AF79809eD43749 0670559f1384d63515ca4a433e17e9b00e91de7615da040719de39a7139a11ba
+myArgs= [
   'http://127.0.0.1:8545',
   '0x6dE47FC3cA6DBE83a0cbc3b0F4AF79809eD43749',
   '0670559f1384d63515ca4a433e17e9b00e91de7615da040719de39a7139a11ba'
@@ -20,37 +20,37 @@ test accounts
 ]
 1st account is contract deployer
 2-10 accounts are test users
-admin balance: 99.98999994799148
+admin balance: 100.0
 balances
-user1: 99.96999999775671
+user1: 100.0
 user2: 100.0
 user3: 100.0
 /* 1.deploy opt nft contract */
-nft contract address = 0x0c7a0c9CD1B14Ac29503Dd5d991f3318CC7625B8
+nft contract address = 0x3557C05fd627704788025CaB4898139f9caE93ed
 == 1.deploy nft contract - passed ==
 gas spend on deploy of opt contract
-12608220000
+11971330000
 /* 1.deploy OZ standart nft contract */
-nft contract oz address = 0xf3599C103c2Eab514c0a8504bf3F64B04040144B
+nft contract oz address = 0x59884cF0B09e51A215B5A66417f20b0C026A9BeB
 == 1.deploy OZ standart nft contract - passed ==
 gas spend on deploy of OZ standart contract
-7189680000
+7021210000
 /* 1.deploy OPT standart  nft contract */
-nft contract opt (empty) address = 0x1540B62353483e6408901D9A7eC2aFe5d85D3ce6
+nft contract opt (empty) address = 0xE0caf7A99F297F9899C6489AdA1F74569D331565
 == 1.deploy OPT standart nft contract - passed ==
 gas spend on deploy of OPT standart contract
-6156795000
+6239695000
 /* 2.configure contract */
 setFee passed
 addManager passed
 == 2.configure contract - passed ==
 /* 3.mint & burn nftpasses */
 gas spend on mint in opt
-772825000
+784850000
 gas spend on mint in OZ standart WITHOUT ALL bus. logic implemented
-666495000
+667965000
 gas spend on mint in OPT standart WITHOUT ALL bus. logic implemented
-650370000
+659950000
 hasPass passed
 right behaviour - cant mint 2 passes to the same user
 exist passed

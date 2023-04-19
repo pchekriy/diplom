@@ -447,7 +447,7 @@ contract NFToken is
     uint256 _tokenId,
     bytes calldata _data
   )
-    public
+    external
     virtual
     override {
         _safeTransferFrom(_from, _to, _tokenId, _data);
@@ -467,7 +467,7 @@ contract NFToken is
     address _to,
     uint256 _tokenId
   )
-    public
+    external
     virtual
     override {
         _safeTransferFrom(_from, _to, _tokenId, "");
@@ -488,7 +488,7 @@ contract NFToken is
     address _to,
     uint256 _tokenId
   )
-    public
+    external
     override
     virtual
     canTransfer(_tokenId)
@@ -630,7 +630,7 @@ contract NFToken is
         _removeNFToken(from, _tokenId);
         _addNFToken(_to, _tokenId);
 
-        //emit Transfer(from, _to, _tokenId);
+        emit Transfer(from, _to, _tokenId);
     }
 
   /**
@@ -652,7 +652,7 @@ contract NFToken is
 
         _addNFToken(_to, _tokenId);
 
-        //emit Transfer(address(0), _to, _tokenId);
+        emit Transfer(address(0), _to, _tokenId);
     }
 
   /**
@@ -881,7 +881,7 @@ contract NFTokenMetadata is
   function tokenURI(
     uint256 _tokenId
   )
-    public
+    external
     override
     virtual
     view
@@ -922,7 +922,7 @@ contract NFTokenMetadata is
    */
   function _setTokenUri(
     uint256 _tokenId,
-    string memory _uri
+    string calldata _uri
   )
     internal
     validNFToken(_tokenId){
@@ -1230,7 +1230,7 @@ contract NFTPass is NFTokenEnumerable,  Ownable, PC {
   
   
   
-  	string private contractUri = "";
+  	string private contractUri;
   
   	uint256 public fee = 1e15; //0.001 eth
   
@@ -1284,7 +1284,7 @@ contract NFTPass is NFTokenEnumerable,  Ownable, PC {
 
 
   
-  function setContractURI(string memory newContractUri) external onlyOwner {
+  function setContractURI(string calldata newContractUri) external onlyOwner {
     contractUri = newContractUri;
   }
 
@@ -1296,7 +1296,7 @@ contract NFTPass is NFTokenEnumerable,  Ownable, PC {
   }
 
   
-  function tokenURI(uint256 tokenId) public  view override returns (string memory) {
+  function tokenURI(uint256 tokenId) external  view override returns (string memory) {
         require(_exists(tokenId), "ERC721Metadata: URI query for nonexistent token");
          return string(abi.encodePacked(
                 'data:application/json;utf8,{"name":"',
@@ -1360,19 +1360,19 @@ contract NFTPass is NFTokenEnumerable,  Ownable, PC {
       return _exists(_tokenId);
   }
 
-  function safeTransferFrom(address _from, address _to, uint256 _tokenId, bytes calldata _data) public override {
+  function safeTransferFrom(address _from, address _to, uint256 _tokenId, bytes calldata _data) external override {
        require(true,"transfer of passes is disabled");
        //super.safeTransferFrom(_from, _to, _tokenId, _data);
   }
 
  
-  function safeTransferFrom(address _from, address _to, uint256 _tokenId) public override {
+  function safeTransferFrom(address _from, address _to, uint256 _tokenId) external override {
        require(true,"transfer of passes is disabled");
        //super.safeTransferFrom(_from, _to, _tokenId);
   }
 
   
-  function transferFrom(address _from, address _to, uint256 _tokenId) public override canTransfer(_tokenId) validNFToken(_tokenId){
+  function transferFrom(address _from, address _to, uint256 _tokenId) external override canTransfer(_tokenId) validNFToken(_tokenId){
        require(true,"transfer of passes is disabled");
        //super.transferFrom(_from,_to,_tokenId);
   }
@@ -1382,6 +1382,5 @@ contract NFTPass is NFTokenEnumerable,  Ownable, PC {
     return (_getOwnerNFTCount(wallet) > 0);
   }
 
-  //TODO - simplify, now data structure allows to store many NFT tokens per user, but
-  //can be simplified to 1 token per user
+  
 }
