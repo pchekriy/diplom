@@ -372,14 +372,7 @@ async function testall(){
   						"checking nftpasses - passed", 
   						)  
 
-  	console.log('/* 5.test owner withdraw ether */');
-  	//TODO
-  	//get current owner balance
-  	//get current contract balance
-  	//withdraw with respective function whole contract balance
-  	//get updated owner balance & updated contract balance
-  	//verify that curret owner balance > init owner balance && contract balance == 0
-
+  	
  	console.log('=== all tests passed ===');	
  	process.exit(0);
 }
