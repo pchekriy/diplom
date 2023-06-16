@@ -1,0 +1,34 @@
+[
+    {
+        "price":111.0,
+        "name":{ "en":"certificate" },
+        "description":{ "en":"certificate" },
+        "serviceId":"forgame-ru",
+        "versions":[
+            {
+                "sub_name":{ "en":"1 code" },
+                "sub_description":{ "en":"1 code" },
+                "quantity":1
+            },
+            {
+                "sub_name":{ "en":"3 codes" },
+                "sub_description":{ "en":"3 codes" },
+                "quantity":3
+            }
+        ]
+    },
+     {
+        "price":222.0,
+        "name":{ "en":"certificate" },
+        "description":{ "en":"certificate" },
+        "serviceId":"forgame-ru",
+        "versions":[
+            {
+                "sub_name":{ "en":"1 code" },
+                "sub_description":{ "en":"1 code" },
+                "quantity":1
+            }
+        ]
+    }
+]
+
